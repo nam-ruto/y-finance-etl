@@ -1,0 +1,4 @@
+# Default 2.8.1 image is Python 3.8; pandas 2.2+ and current yfinance need >=3.9
+FROM apache/airflow:2.8.1-python3.11
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
