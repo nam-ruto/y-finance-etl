@@ -1,0 +1,92 @@
+{
+    "title": "Pipeline Health",
+    "uid": "pipeline-health",
+    "tags": ["etl", "pipeline"],
+    "refresh": "30s",
+    "time": { "from": "now-24h", "to": "now" },
+    "panels": [
+      {
+        "id": 1, "type": "stat", "gridPos": { "x": 0, "y": 0, "w": 4, "h": 4 },
+        "title": "Total DAG runs",
+        "datasource": "Prometheus",
+        "targets": [{ "expr": "sum(etl_dag_runs_total)", "legendFormat": "runs" }],
+        "options": { "colorMode": "background", "textMode": "auto" },
+        "fieldConfig": { "defaults": { "color": { "mode": "fixed", "fixedColor": "blue" } } }
+      },
+      {
+        "id": 2, "type": "gauge", "gridPos": { "x": 4, "y": 0, "w": 4, "h": 4 },
+        "title": "Success rate (7d)",
+        "datasource": "Prometheus",
+        "targets": [{ "expr": "avg(etl_dag_success_rate_7d) * 100", "legendFormat": "%" }],
+        "options": { "reduceOptions": { "calcs": ["lastNotNull"] } },
+        "fieldConfig": {
+          "defaults": {
+            "min": 0, "max": 100, "unit": "percent",
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                { "color": "red", "value": 0 },
+                { "color": "yellow", "value": 80 },
+                { "color": "green", "value": 95 }
+              ]
+            }
+          }
+        }
+      },
+      {
+        "id": 3, "type": "stat", "gridPos": { "x": 8, "y": 0, "w": 4, "h": 4 },
+        "title": "Rows ingested (last run)",
+        "datasource": "Prometheus",
+        "targets": [{ "expr": "sum(etl_rows_ingested_last_run)", "legendFormat": "rows" }],
+        "options": { "colorMode": "background" },
+        "fieldConfig": { "defaults": { "color": { "mode": "fixed", "fixedColor": "green" } } }
+      },
+      {
+        "id": 4, "type": "stat", "gridPos": { "x": 12, "y": 0, "w": 4, "h": 4 },
+        "title": "Last successful run",
+        "datasource": "Prometheus",
+        "targets": [{ "expr": "etl_last_successful_run_timestamp{dag_id='ingest_stock_prices'}", "legendFormat": "timestamp" }],
+        "options": { "colorMode": "value" },
+        "fieldConfig": { "defaults": { "unit": "dateTimeFromNow" } }
+      },
+      {
+        "id": 5, "type": "stat", "gridPos": { "x": 16, "y": 0, "w": 4, "h": 4 },
+        "title": "Anomalies flagged (7d)",
+        "datasource": "Prometheus",
+        "targets": [{ "expr": "etl_anomalies_flagged_7d", "legendFormat": "anomalies" }],
+        "options": { "colorMode": "background" },
+        "fieldConfig": {
+          "defaults": {
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                { "color": "green", "value": 0 },
+                { "color": "yellow", "value": 1 },
+                { "color": "red", "value": 5 }
+              ]
+            }
+          }
+        }
+      },
+      {
+        "id": 6, "type": "timeseries", "gridPos": { "x": 0, "y": 4, "w": 12, "h": 8 },
+        "title": "Rows ingested over time",
+        "datasource": "Prometheus",
+        "targets": [{ "expr": "etl_rows_ingested_last_run", "legendFormat": "{{dag_id}}" }],
+        "fieldConfig": { "defaults": { "color": { "mode": "palette-classic" } } }
+      },
+      {
+        "id": 7, "type": "timeseries", "gridPos": { "x": 12, "y": 4, "w": 12, "h": 8 },
+        "title": "DAG success rate over time",
+        "datasource": "Prometheus",
+        "targets": [{ "expr": "etl_dag_success_rate_7d * 100", "legendFormat": "{{dag_id}}" }],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "percent", "min": 0, "max": 100,
+            "color": { "mode": "fixed", "fixedColor": "green" }
+          }
+        }
+      }
+    ],
+    "schemaVersion": 38
+}

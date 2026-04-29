@@ -7,3 +7,16 @@ datasources:
     url: http://prometheus:9090
     isDefault: true
     editable: true
+
+  - name: PostgreSQL
+    type: postgres
+    access: proxy
+    url: postgres:5432
+    database: airflow
+    user: airflow
+    secureJsonData:
+      password: airflow
+    jsonData:
+      sslmode: disable
+      postgresVersion: 1500
+    editable: true

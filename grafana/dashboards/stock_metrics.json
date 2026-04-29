@@ -1,0 +1,74 @@
+{
+    "title": "Stock Metrics",
+    "uid": "stock-metrics",
+    "tags": ["etl", "stocks"],
+    "refresh": "1m",
+    "time": { "from": "now-30d", "to": "now" },
+    "panels": [
+      {
+        "id": 1, "type": "stat", "gridPos": { "x": 0, "y": 0, "w": 6, "h": 4 },
+        "title": "Raw rows total",
+        "datasource": "Prometheus",
+        "targets": [{ "expr": "etl_raw_stock_prices_total", "legendFormat": "rows" }],
+        "options": { "colorMode": "background" },
+        "fieldConfig": { "defaults": { "color": { "mode": "fixed", "fixedColor": "blue" } } }
+      },
+      {
+        "id": 2, "type": "stat", "gridPos": { "x": 6, "y": 0, "w": 6, "h": 4 },
+        "title": "Transformed rows total",
+        "datasource": "Prometheus",
+        "targets": [{ "expr": "etl_transformed_stock_metrics_total", "legendFormat": "rows" }],
+        "options": { "colorMode": "background" },
+        "fieldConfig": { "defaults": { "color": { "mode": "fixed", "fixedColor": "purple" } } }
+      },
+      {
+        "id": 3, "type": "stat", "gridPos": { "x": 12, "y": 0, "w": 6, "h": 4 },
+        "title": "Tickers tracked",
+        "datasource": "PostgreSQL",
+        "targets": [{
+          "rawSql": "SELECT COUNT(*) as value FROM raw.tickers WHERE active = TRUE",
+          "format": "table"
+        }],
+        "options": { "colorMode": "background" },
+        "fieldConfig": { "defaults": { "color": { "mode": "fixed", "fixedColor": "teal" } } }
+      },
+      {
+        "id": 4, "type": "stat", "gridPos": { "x": 18, "y": 0, "w": 6, "h": 4 },
+        "title": "Anomalies flagged (7d)",
+        "datasource": "Prometheus",
+        "targets": [{ "expr": "etl_anomalies_flagged_7d", "legendFormat": "flags" }],
+        "options": { "colorMode": "background" },
+        "fieldConfig": {
+          "defaults": {
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                { "color": "green", "value": 0 },
+                { "color": "red", "value": 1 }
+              ]
+            }
+          }
+        }
+      },
+      {
+        "id": 5, "type": "timeseries", "gridPos": { "x": 0, "y": 4, "w": 24, "h": 10 },
+        "title": "Closing price + moving averages",
+        "datasource": "PostgreSQL",
+        "targets": [
+          {
+            "rawSql": "SELECT trade_date AS time, close AS \"Close\", ma_7 AS \"MA7\", ma_30 AS \"MA30\" FROM transformed.stock_metrics WHERE ticker = 'AAPL' AND trade_date >= NOW() - INTERVAL '30 days' ORDER BY trade_date",
+            "format": "time_series"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": { "custom": { "lineWidth": 2 } },
+          "overrides": [
+            { "matcher": { "id": "byName", "options": "Close" }, "properties": [{ "id": "color", "value": { "mode": "fixed", "fixedColor": "blue" } }] },
+            { "matcher": { "id": "byName", "options": "MA7" },   "properties": [{ "id": "color", "value": { "mode": "fixed", "fixedColor": "orange" } }, { "id": "custom.lineStyle", "value": { "dash": [4, 4] } }] },
+            { "matcher": { "id": "byName", "options": "MA30" },  "properties": [{ "id": "color", "value": { "mode": "fixed", "fixedColor": "red" } }, { "id": "custom.lineStyle", "value": { "dash": [8, 4] } }] }
+          ]
+        }
+      }
+    ],
+    "schemaVersion": 38
+}

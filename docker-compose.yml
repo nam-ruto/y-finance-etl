@@ -101,6 +101,26 @@ services:
       - etl-net
     restart: always
 
+  metrics-exporter:
+    build:
+      context: .
+      dockerfile: Dockerfile.exporter
+    environment:
+      POSTGRES_HOST: postgres
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      EXPORTER_PORT: 8000
+      SCRAPE_INTERVAL: 15
+    ports:
+      - "8000:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - etl-net
+    restart: always
+
 volumes:
   postgres_data:
   prometheus_data:
